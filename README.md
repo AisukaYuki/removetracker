@@ -1,2 +1,2 @@
 # removetracker
-qBittorrent Tracker Remover
+qBittorrent Tracker Remover by ChatGPT-4o
