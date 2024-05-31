@@ -90,20 +90,6 @@ tk.Button(app, text="删除Tracker", command=remove_tracker).grid(row=4, columns
 app.mainloop()
 ```
 
-### 解释
-1. **设置默认值**：在定义输入框时，使用`insert`方法插入默认值。例如：
-   ```python
-   qb_url_entry.insert(0, default_qb_url)
-   ```
-2. **默认值变量**：定义默认值变量，方便修改和管理：
-   ```python
-   default_qb_url = 'http://localhost:8080'
-   default_qb_username = 'admin'
-   default_qb_password = ''
-   default_target_tracker = 'tracker.cinefiles.info'
-   ```
-3. **保持现有功能**：除了添加默认值，其他功能保持不变，包括登录qBittorrent、获取种子信息、查找并删除特定tracker的逻辑。
-
 ### 打包成可执行文件
 按照前述步骤使用`pyinstaller`打包成可执行文件：
 
