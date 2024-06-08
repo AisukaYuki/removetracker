@@ -60,7 +60,10 @@ def search_torrents():
 
             for tracker in trackers:
                 if target_tracker in tracker['url']:
-                    matched_torrents.append(torrent)
+                    matched_torrents.append({
+                        'torrent': torrent,
+                        'tracker_url': tracker['url']
+                    })
                     logger.info(f"种子 {torrent['name']} 符合条件，tracker: {tracker['url']}")
 
         if not matched_torrents:
@@ -80,22 +83,28 @@ def remove_tracker():
             return
 
         qb_url = qb_url_entry.get()
-        target_tracker = target_tracker_entry.get()
 
         session = requests.Session()
-        for torrent in matched_torrents:
+        for matched in matched_torrents:
+            torrent = matched['torrent']
+            tracker_url = matched['tracker_url']
             torrent_hash = torrent['hash']
             remove_tracker_url = f'{qb_url}/api/v2/torrents/removeTrackers'
             remove_tracker_data = {
                 'hash': torrent_hash,
-                'urls': target_tracker
+                'urls': tracker_url
             }
-            logger.info(f"正在从种子 {torrent['name']} 删除 tracker {target_tracker}...")
+            logger.info(f"正在从种子 {torrent['name']} 删除 tracker {tracker_url}...")
+            logger.debug(f"请求URL: {remove_tracker_url}")
+            logger.debug(f"请求数据: {remove_tracker_data}")
             remove_response = session.post(remove_tracker_url, data=remove_tracker_data)
             remove_response.raise_for_status()
-            logger.info(f"成功从种子 {torrent['name']} 删除 tracker {target_tracker}")
+            logger.info(f"成功从种子 {torrent['name']} 删除 tracker {tracker_url}")
 
         messagebox.showinfo("成功", "完成tracker删除")
+    except requests.exceptions.HTTPError as http_err:
+        logger.error(f"HTTP错误: {http_err.response.status_code} - {http_err.response.reason}")
+        messagebox.showerror("HTTP错误", f"HTTP错误: {http_err.response.status_code} - {http_err.response.reason}")
     except Exception as e:
         logger.error(f"发生错误: {str(e)}")
         messagebox.showerror("错误", str(e))
@@ -108,7 +117,7 @@ app.resizable(False, False)
 default_qb_url = 'http://localhost:8080'
 default_qb_username = 'admin'
 default_qb_password = 'adminadmin'
-default_target_tracker = 'test.com'
+default_target_tracker = 'test'
 
 tk.Label(app, text="qBittorrent URL", width=15, anchor="w").grid(row=0, column=0, sticky="w")
 tk.Label(app, text="用户名", width=15, anchor="w").grid(row=1, column=0, sticky="w")
@@ -131,6 +140,9 @@ qb_url_entry.grid(row=0, column=0, padx=(120, 0), pady=3, sticky="w")
 qb_username_entry.grid(row=1, column=0, padx=(120, 0), pady=3, sticky="w")
 qb_password_entry.grid(row=2, column=0, padx=(120, 0), pady=3, sticky="w")
 target_tracker_entry.grid(row=3, column=0, padx=(120, 0), pady=3, sticky="w")
+
+button_frame = tk.Frame(app)
+button_frame.grid(row=4, column=0, columnspan=2, pady=10, sticky="w")
 
 tk.Button(app, text="查找种子", command=search_torrents, width=10, cursor="hand2").grid(row=4, column=0, padx=(120, 0), pady=10, sticky="w")
 tk.Button(app, text="删除Tracker", command=remove_tracker, width=10, cursor="hand2").grid(row=4, column=0, padx=(220, 0), pady=10, sticky="w")
