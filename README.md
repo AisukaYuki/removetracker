@@ -37,6 +37,6 @@ qBittorrent Tracker Remover by ChatGPT-4o
 1. 脚本从命令行参数中获取种子的 info hash。
 2. 脚本登录到 qBittorrent 的 Web UI。
 3. 脚本获取指定种子的所有 tracker 信息。
-4. 脚本检查每个 tracker，如果匹配到指定的 tracker URL（例如 "tracker.cinefiles.info"），则调用 API 移除该 tracker。
+4. 脚本检查每个 tracker，如果匹配到指定的 tracker URL，则调用 API 移除该 tracker。
 
-通过这种方式，当种子完成下载时，qBittorrent 将运行该脚本，并传递种子的 info hash 给脚本。脚本将使用传递的 info hash 来检查并移除包含 "tracker.cinefiles.info" 的 tracker。
+通过这种方式，当种子完成下载时，qBittorrent 将运行该脚本，并传递种子的 info hash 给脚本。脚本将使用传递的 info hash 来检查并移除tracker。
