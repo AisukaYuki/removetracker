@@ -109,8 +109,82 @@ def remove_tracker():
         logger.error(f"发生错误: {str(e)}")
         messagebox.showerror("错误", str(e))
 
+def replace_tracker():
+    try:
+        matched_torrents = getattr(search_torrents, 'matched_torrents', [])
+        if not matched_torrents:
+            logger.info("没有符合条件的种子")
+            return
+        qb_url = qb_url_entry.get()
+        new_tracker_part = new_tracker_entry.get()  # 新tracker部分
+        session = requests.Session()
+
+        for matched in matched_torrents:
+            torrent = matched['torrent']
+            tracker_url = matched['tracker_url']
+            new_tracker_url = tracker_url.replace(target_tracker_entry.get(), new_tracker_part)
+
+            remove_tracker_url = f'{qb_url}/api/v2/torrents/removeTrackers'
+            remove_tracker_data = {
+                'hash': torrent['hash'],
+                'urls': tracker_url
+            }
+            add_tracker_url = f'{qb_url}/api/v2/torrents/addTrackers'
+            add_tracker_data = {
+                'hash': torrent['hash'],
+                'urls': new_tracker_url
+            }
+
+            # 先移除旧的tracker
+            logger.info(f"正在从种子 {torrent['name']} 删除 tracker {tracker_url}...")
+            remove_response = session.post(remove_tracker_url, data=remove_tracker_data)
+            remove_response.raise_for_status()
+
+            # 添加新的tracker
+            logger.info(f"正在为种子 {torrent['name']} 添加新的 tracker {new_tracker_url}...")
+            add_response = session.post(add_tracker_url, data=add_tracker_data)
+            add_response.raise_for_status()
+
+            logger.info(f"成功将种子 {torrent['name']} 的 tracker 从 {tracker_url} 修改为 {new_tracker_url}")
+        
+        messagebox.showinfo("成功", "完成tracker替换")
+    except requests.exceptions.HTTPError as http_err:
+        logger.error(f"HTTP错误: {http_err.response.status_code} - {http_err.response.reason}")
+        messagebox.showerror("HTTP错误", f"HTTP错误: {http_err.response.status_code} - {http_err.response.reason}")
+    except Exception as e:
+        logger.error(f"发生错误: {str(e)}")
+        messagebox.showerror("错误", str(e))
+
+class ToolTip:
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tip_window = None
+        widget.bind("<Enter>", self.show_tip)
+        widget.bind("<Leave>", self.hide_tip)
+
+    def show_tip(self, event=None):
+        if self.tip_window or not self.text:
+            return
+        x, y, _, _ = self.widget.bbox("insert")
+        x = x + self.widget.winfo_rootx() + 100
+        y = y + self.widget.winfo_rooty() + 25
+        self.tip_window = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)
+        tw.wm_geometry(f"+{x}+{y}")
+        label = tk.Label(tw, text=self.text, justify=tk.LEFT,
+                         background="#ffffe0", relief=tk.SOLID, borderwidth=1,
+                         font=("tahoma", "10", "normal"))
+        label.pack(ipadx=1)
+
+    def hide_tip(self, event=None):
+        tw = self.tip_window
+        self.tip_window = None
+        if tw:
+            tw.destroy()
+        
 app = tk.Tk()
-app.title("qBittorrent Tracker Remover")
+app.title("qBittorrent Tracker Editor")
 app.resizable(False, False)
 
 # 设置默认值
@@ -123,6 +197,8 @@ tk.Label(app, text="qBittorrent URL", width=15, anchor="w").grid(row=0, column=0
 tk.Label(app, text="用户名", width=15, anchor="w").grid(row=1, column=0, sticky="w")
 tk.Label(app, text="密码", width=15, anchor="w").grid(row=2, column=0, sticky="w")
 tk.Label(app, text="目标Tracker", width=15, anchor="w").grid(row=3, column=0, sticky="w")
+tk.Label(app, text="替换Tracker", width=15, anchor="w").grid(row=4, column=0, sticky="w")
+
 
 qb_url_entry = tk.Entry(app, width=30)
 qb_url_entry.insert(0, default_qb_url)
@@ -136,24 +212,35 @@ qb_password_entry.insert(0, default_qb_password)
 target_tracker_entry = tk.Entry(app, width=30)
 target_tracker_entry.insert(0, default_target_tracker)
 
+
+new_tracker_entry = tk.Entry(app, width=30)
+
 qb_url_entry.grid(row=0, column=0, padx=(120, 0), pady=3, sticky="w")
 qb_username_entry.grid(row=1, column=0, padx=(120, 0), pady=3, sticky="w")
 qb_password_entry.grid(row=2, column=0, padx=(120, 0), pady=3, sticky="w")
+
 target_tracker_entry.grid(row=3, column=0, padx=(120, 0), pady=3, sticky="w")
+ToolTip(target_tracker_entry, "输出需要查找关键字，点击'查找种子'按钮，\n筛选需要操作的种子，以执行删除或替换。")
+
+new_tracker_entry.grid(row=4, column=0, padx=(120, 0), pady=3, sticky="w")
+ToolTip(new_tracker_entry, "注意，此功能仅替换'目标Tracker'一栏中命中的字符串。\n例如：'目标Tracker'一栏中填写test，'替换Tracker'填写baidu，则：\nhttps://www.test233.com/123456 会替换为  https://www.baidu233.com/123456")
+
 
 button_frame = tk.Frame(app)
 button_frame.grid(row=4, column=0, columnspan=2, pady=10, sticky="w")
 
-tk.Button(app, text="查找种子", command=search_torrents, width=10, cursor="hand2").grid(row=4, column=0, padx=(120, 0), pady=10, sticky="w")
-tk.Button(app, text="删除Tracker", command=remove_tracker, width=10, cursor="hand2").grid(row=4, column=0, padx=(220, 0), pady=10, sticky="w")
+tk.Button(app, text="查找种子", command=search_torrents, width=10, cursor="hand2").grid(row=5, column=0, padx=(80, 0), pady=10, sticky="w")
+tk.Button(app, text="删除Tracker", command=remove_tracker, width=10, cursor="hand2").grid(row=5, column=0, padx=(180, 0), pady=10, sticky="w")
+tk.Button(app, text="替换Tracker", command=replace_tracker, width=10, cursor="hand2").grid(row=5, column=0, padx=(280, 0), pady=10, sticky="w")
+
 
 # 添加日志输出窗口
 log_text = scrolledtext.ScrolledText(app, height=15, state='disabled')
-log_text.grid(row=5, columnspan=2, padx=3, pady=3, sticky="w")
+log_text.grid(row=6, columnspan=2, padx=3, pady=3, sticky="w")
 
 # 配置日志处理器
 text_handler = TextHandler(log_text)
 text_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 logger.addHandler(text_handler)
 
-app.mainloop()
+app.mainloop()
