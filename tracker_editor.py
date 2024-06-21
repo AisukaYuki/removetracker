@@ -220,7 +220,7 @@ qb_username_entry.grid(row=1, column=0, padx=(120, 0), pady=3, sticky="w")
 qb_password_entry.grid(row=2, column=0, padx=(120, 0), pady=3, sticky="w")
 
 target_tracker_entry.grid(row=3, column=0, padx=(120, 0), pady=3, sticky="w")
-ToolTip(target_tracker_entry, "输出需要查找关键字，点击'查找种子'按钮，\n筛选需要操作的种子，以执行删除或替换。")
+ToolTip(target_tracker_entry, "输入需要查找关键字，点击'查找种子'按钮，\n筛选需要操作的种子，以执行删除或替换。")
 
 new_tracker_entry.grid(row=4, column=0, padx=(120, 0), pady=3, sticky="w")
 ToolTip(new_tracker_entry, "注意，此功能仅替换'目标Tracker'一栏中命中的字符串。\n例如：'目标Tracker'一栏中填写test，'替换Tracker'填写baidu，则：\nhttps://www.test233.com/123456 会替换为  https://www.baidu233.com/123456")
