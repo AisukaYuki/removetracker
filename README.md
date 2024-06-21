@@ -12,7 +12,7 @@ qBittorrent Tracker Remover by ChatGPT-4o
 
 2. 使用`pyinstaller`打包脚本：
    ```sh
-   pyinstaller --onefile --windowed removetracker.py
+   pyinstaller --onefile --windowed remove_editor.py
    ```
 
 这样，你会得到一个包含默认值的GUI界面应用，并且可以将其打包成可执行文件用于分发和使用。
