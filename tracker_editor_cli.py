@@ -124,27 +124,32 @@ def main():
     subparsers = parser.add_subparsers(dest='command', required=True)
 
     search_parser = subparsers.add_parser('search', help='查找种子')
-    search_parser.add_argument('-h', '--host', required=True, help='qBittorrent URL')
-    search_parser.add_argument('-u', '--username', required=True, help='用户名')
-    search_parser.add_argument('-p', '--password', required=True, help='密码')
-    search_parser.add_argument('-t', '--target-tracker', required=True, help='目标Tracker')
+    search_parser.add_argument('-H', '--host', required=True, help='qBittorrent Web UI 的 URL，例如：http://localhost:8080')
+    search_parser.add_argument('-u', '--username', required=True, help='qBittorrent Web UI 的用户名')
+    search_parser.add_argument('-p', '--password', required=True, help='qBittorrent Web UI 的密码')
+    search_parser.add_argument('-t', '--target-tracker', required=True, help='要查找的目标 Tracker 关键字')
 
-    remove_parser = subparsers.add_parser('remove', help='删除Tracker')
-    remove_parser.add_argument('-h', '--host', required=True, help='qBittorrent URL')
+    remove_parser = subparsers.add_parser('remove', help='删除 Tracker')
+    remove_parser.add_argument('-H', '--host', required=True, help='qBittorrent Web UI 的 URL，例如：http://localhost:8080')
+    remove_parser.add_argument('-u', '--username', required=True, help='qBittorrent Web UI 的用户名')
+    remove_parser.add_argument('-p', '--password', required=True, help='qBittorrent Web UI 的密码')
+    remove_parser.add_argument('-t', '--target-tracker', required=True, help='要删除的目标 Tracker 关键字')
 
-    replace_parser = subparsers.add_parser('replace', help='替换Tracker')
-    replace_parser.add_argument('-h', '--host', required=True, help='qBittorrent URL')
-    replace_parser.add_argument('-t', '--target-tracker', required=True, help='目标Tracker')
-    replace_parser.add_argument('-n', '--new-tracker', required=True, help='新的Tracker部分')
+    replace_parser = subparsers.add_parser('replace', help='替换 Tracker')
+    replace_parser.add_argument('-H', '--host', required=True, help='qBittorrent Web UI 的 URL，例如：http://localhost:8080')
+    replace_parser.add_argument('-u', '--username', required=True, help='qBittorrent Web UI 的用户名')
+    replace_parser.add_argument('-p', '--password', required=True, help='qBittorrent Web UI 的密码')
+    replace_parser.add_argument('-t', '--target-tracker', required=True, help='要查找的目标 Tracker 关键字，仅替换命中的字符串，请确保需要替换部分输入完整')
+    replace_parser.add_argument('-n', '--new-tracker', required=True, help='用于替换的新的 Tracker 部分')
 
     args = parser.parse_args()
 
     if args.command == 'search':
         search_torrents(args.host, args.username, args.password, args.target_tracker)
     elif args.command == 'remove':
-        remove_tracker(args.host)
+        remove_tracker(args.host, args.username, args.password, args.target_tracker)
     elif args.command == 'replace':
-        replace_tracker(args.host, args.target_tracker, args.new_tracker)
+        replace_tracker(args.host, args.username, args.password, args.target_tracker, args.new_tracker)
 
 if __name__ == '__main__':
     main()
