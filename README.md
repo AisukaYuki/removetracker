@@ -22,6 +22,24 @@ qBittorrent Tracker Remover by ChatGPT-4o
 
 好的，以下是如何修改代码以在 qBittorrent 中完成种子时自动移除特定 tracker 的完整示例。在这个脚本中，我们使用 `torrent_hash` 参数，它将由 qBittorrent 在完成时传递，并匹配并移除特定 tracker。
 
+
+
+**命令行版本使用示例**：
+   - 查找种子：
+     ```bash
+     python tracker_editor.py search -h http://localhost:8080 -u admin -p adminadmin -t test
+     ```
+   - 删除 Tracker：
+     ```bash
+     python tracker_editor.py remove -h http://localhost:8080 -u admin -p adminadmin -t test
+     ```
+   - 替换 Tracker：
+     ```bash
+     python tracker_editor.py replace -h http://localhost:8080 -u admin -p adminadmin -t test -n newtracker
+     ```
+
+可以通过 `--help` 选项查看每个命令和参数的详细说明，方便使用。
+
 ### 新增脚本，在下载完成后自动执行移除操作
 
 #### 配置 qBittorrent
