@@ -20,10 +20,6 @@ qBittorrent Tracker Remover by ChatGPT-4o
 
 ![image](https://github.com/AisukaYuki/removetracker/assets/17586327/4b629d5d-c944-4c05-8548-b7452e37c1c7)
 
-好的，以下是如何修改代码以在 qBittorrent 中完成种子时自动移除特定 tracker 的完整示例。在这个脚本中，我们使用 `torrent_hash` 参数，它将由 qBittorrent 在完成时传递，并匹配并移除特定 tracker。
-
-
-
 **命令行版本使用示例**：
    - 查找种子：
      ```bash
