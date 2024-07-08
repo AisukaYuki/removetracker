@@ -1,25 +1,24 @@
 import requests
 import logging
-import argparse
 
 # 设置日志记录
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-def search_torrents(qb_url, qb_username, qb_password, target_tracker):
-    try:
-        session = requests.Session()
-        login_url = f'{qb_url}/api/v2/auth/login'
-        login_data = {
-            'username': qb_username,
-            'password': qb_password
-        }
-        logger.info("尝试登录 qBittorrent Web UI...")
-        response = session.post(login_url, data=login_data)
-        response.raise_for_status()
-        logger.info("登录成功")
+def login(session, qb_url, qb_username, qb_password):
+    login_url = f'{qb_url}/api/v2/auth/login'
+    login_data = {
+        'username': qb_username,
+        'password': qb_password
+    }
+    logger.info("尝试登录 qBittorrent Web UI...")
+    response = session.post(login_url, data=login_data)
+    response.raise_for_status()
+    logger.info("登录成功")
 
+def search_torrents(session, qb_url, target_tracker):
+    try:
         torrents_url = f'{qb_url}/api/v2/torrents/info'
         logger.info("获取种子信息...")
         response = session.get(torrents_url)
@@ -51,14 +50,13 @@ def search_torrents(qb_url, qb_username, qb_password, target_tracker):
     except Exception as e:
         logger.error(f"发生错误: {str(e)}")
 
-def remove_tracker(qb_url):
+def remove_tracker(session, qb_url):
     try:
         matched_torrents = getattr(search_torrents, 'matched_torrents', [])
         if not matched_torrents:
-            logger.info("没有符合条件的种子")
+            logger.info("没有符合条件的种子，请先执行查找种子")
             return
 
-        session = requests.Session()
         for matched in matched_torrents:
             torrent = matched['torrent']
             tracker_url = matched['tracker_url']
@@ -78,14 +76,13 @@ def remove_tracker(qb_url):
     except Exception as e:
         logger.error(f"发生错误: {str(e)}")
 
-def replace_tracker(qb_url, target_tracker, new_tracker_part):
+def replace_tracker(session, qb_url, target_tracker, new_tracker_part):
     try:
         matched_torrents = getattr(search_torrents, 'matched_torrents', [])
         if not matched_torrents:
-            logger.info("没有符合条件的种子")
+            logger.info("没有符合条件的种子，请先执行查找种子")
             return
 
-        session = requests.Session()
         for matched in matched_torrents:
             torrent = matched['torrent']
             tracker_url = matched['tracker_url']
@@ -120,36 +117,33 @@ def replace_tracker(qb_url, target_tracker, new_tracker_part):
         logger.error(f"发生错误: {str(e)}")
 
 def main():
-    parser = argparse.ArgumentParser(description='qBittorrent Tracker Editor')
-    subparsers = parser.add_subparsers(dest='command', required=True)
+    qb_url = input("请输入qb地址，如 http://localhost:8080 : \n")
+    qb_username = input("输入用户名：\n")
+    qb_password = input("输入密码：\n")
 
-    search_parser = subparsers.add_parser('search', help='查找种子')
-    search_parser.add_argument('-H', '--host', required=True, help='qBittorrent Web UI 的 URL，例如：http://localhost:8080')
-    search_parser.add_argument('-u', '--username', required=True, help='qBittorrent Web UI 的用户名')
-    search_parser.add_argument('-p', '--password', required=True, help='qBittorrent Web UI 的密码')
-    search_parser.add_argument('-t', '--target-tracker', required=True, help='要查找的目标 Tracker 关键字')
+    session = requests.Session()
+    login(session, qb_url, qb_username, qb_password)
 
-    remove_parser = subparsers.add_parser('remove', help='删除 Tracker')
-    remove_parser.add_argument('-H', '--host', required=True, help='qBittorrent Web UI 的 URL，例如：http://localhost:8080')
-    remove_parser.add_argument('-u', '--username', required=True, help='qBittorrent Web UI 的用户名')
-    remove_parser.add_argument('-p', '--password', required=True, help='qBittorrent Web UI 的密码')
-    remove_parser.add_argument('-t', '--target-tracker', required=True, help='要删除的目标 Tracker 关键字')
+    while True:
+        print("请选择执行的操作：")
+        print("1. 查找种子，输入tracker关键字")
+        print("2. 移除tracker")
+        print("3. 替换tracker字符串")
+        choice = input("请输入选择的操作 (1/2/3) 或 'q' 退出: \n")
 
-    replace_parser = subparsers.add_parser('replace', help='替换 Tracker')
-    replace_parser.add_argument('-H', '--host', required=True, help='qBittorrent Web UI 的 URL，例如：http://localhost:8080')
-    replace_parser.add_argument('-u', '--username', required=True, help='qBittorrent Web UI 的用户名')
-    replace_parser.add_argument('-p', '--password', required=True, help='qBittorrent Web UI 的密码')
-    replace_parser.add_argument('-t', '--target-tracker', required=True, help='要查找的目标 Tracker 关键字，仅替换命中的字符串，请确保需要替换部分输入完整')
-    replace_parser.add_argument('-n', '--new-tracker', required=True, help='用于替换的新的 Tracker 部分')
-
-    args = parser.parse_args()
-
-    if args.command == 'search':
-        search_torrents(args.host, args.username, args.password, args.target_tracker)
-    elif args.command == 'remove':
-        remove_tracker(args.host, args.username, args.password, args.target_tracker)
-    elif args.command == 'replace':
-        replace_tracker(args.host, args.username, args.password, args.target_tracker, args.new_tracker)
+        if choice == '1':
+            target_tracker = input("请输入tracker关键字：")
+            search_torrents(session, qb_url, target_tracker)
+        elif choice == '2':
+            remove_tracker(session, qb_url)
+        elif choice == '3':
+            target_tracker = input("请输入要替换的tracker字符串：")
+            new_tracker_part = input("请输入新的字符串：")
+            replace_tracker(session, qb_url, target_tracker, new_tracker_part)
+        elif choice.lower() == 'q':
+            break
+        else:
+            print("无效的选择，请重新输入。")
 
 if __name__ == '__main__':
     main()
