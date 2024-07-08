@@ -117,9 +117,9 @@ def replace_tracker(session, qb_url, target_tracker, new_tracker_part):
         logger.error(f"发生错误: {str(e)}")
 
 def main():
-    qb_url = input("请输入qb地址，如 http://localhost:8080 : \n")
-    qb_username = input("输入用户名：\n")
-    qb_password = input("输入密码：\n")
+    qb_url = input("请输入qb地址，如 http://localhost:8080 : ")
+    qb_username = input("输入用户名：")
+    qb_password = input("输入密码：")
 
     session = requests.Session()
     login(session, qb_url, qb_username, qb_password)
@@ -129,7 +129,7 @@ def main():
         print("1. 查找种子，输入tracker关键字")
         print("2. 移除tracker")
         print("3. 替换tracker字符串")
-        choice = input("请输入选择的操作 (1/2/3) 或 'q' 退出: \n")
+        choice = input("请输入选择的操作 (1/2/3) 或 'q' 退出: ")
 
         if choice == '1':
             target_tracker = input("请输入tracker关键字：")
