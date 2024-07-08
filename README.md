@@ -20,21 +20,7 @@ qBittorrent Tracker Remover by ChatGPT-4o
 
 ![image](https://github.com/AisukaYuki/removetracker/assets/17586327/4b629d5d-c944-4c05-8548-b7452e37c1c7)
 
-**命令行版本使用示例**：
-   - 查找种子：
-     ```bash
-     python tracker_editor.py search -H http://localhost:8080 -u admin -p adminadmin -t test
-     ```
-   - 删除 Tracker：
-     ```bash
-     python tracker_editor.py remove -H http://localhost:8080 -u admin -p adminadmin -t test
-     ```
-   - 替换 Tracker：
-     ```bash
-     python tracker_editor.py replace -H http://localhost:8080 -u admin -p adminadmin -t test -n newtracker
-     ```
-
-可以通过 `--help` 选项查看每个命令和参数的详细说明，方便使用。
+**命令行版本使用示例**： cli脚本为交互式输入
 
 ### 新增脚本，在下载完成后自动执行移除操作
 
