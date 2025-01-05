@@ -5,7 +5,7 @@ import sys
 qb_url = 'http://localhost:8080'
 qb_username = 'admin'
 qb_password = 'adminadmin'
-target_tracker = 'test.com'
+target_trackers = ['test.com', 'example.com']  # 支持多个 tracker 参数
 
 def login(session):
     login_url = f'{qb_url}/api/v2/auth/login'
@@ -46,11 +46,12 @@ def main(torrent_hash):
 
         for tracker in trackers:
             tracker_url = tracker['url']
-            if target_tracker in tracker_url:
+            if any(target in tracker_url for target in target_trackers):  # 检查是否匹配任意一个目标 tracker
                 # 移除匹配的 tracker
                 remove_tracker(session, torrent_hash, tracker_url)
                 print(f'已移除种子 {torrent_hash} 中的 tracker: {tracker_url}')
-                return  # 只需要移除第一个匹配的 tracker
+                # 如果只需移除一个匹配的 tracker，可以在此处 return；否则注释掉以下 return
+                return  
 
         print("没有找到匹配的 tracker")
     except requests.exceptions.HTTPError as http_err:
@@ -65,3 +66,4 @@ if __name__ == '__main__':
     
     torrent_hash = sys.argv[1]
     main(torrent_hash)
+
